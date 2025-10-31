@@ -6,12 +6,12 @@ const User = require("../models/user.model");
 const placeOrder = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { restaurantId, deliveryAddress, paymentMethod } = req.body;
+        const { resturantId, deliveryAddress, paymentMethod } = req.body;
 
-        if (!restaurantId || !deliveryAddress) {
+        if (!resturantId || !deliveryAddress) {
             return res.status(400).json({
                 success: false,
-                message: "restaurantId and deliveryAddress are required"
+                message: "resturantId and deliveryAddress are required"
             });
         }
 
@@ -28,7 +28,7 @@ const placeOrder = async (req, res) => {
         // Create order from cart
         const order = new Order({
             userId,
-            restaurantId,
+            resturantId,
             items: cart.items,
             totalPrice: cart.totalPrice,
             deliveryAddress,
@@ -66,7 +66,7 @@ const getOrderById = async (req, res) => {
 
         const order = await Order.findOne({ orderId })
             .populate("userId", "name email phone")
-            .populate("restaurantId", "name phone address")
+            .populate("resturantId", "name phone address")
             .populate("items.menuItemId", "name category");
 
         if (!order) {
@@ -103,7 +103,7 @@ const getUserOrders = async (req, res) => {
         const userId = req.user.id;
 
         const orders = await Order.find({ userId })
-            .populate("restaurantId", "name phone address")
+            .populate("resturantId", "name phone address")
             .sort({ createdAt: -1 });
 
         res.status(200).json({
@@ -134,7 +134,7 @@ const getAllOrders = async (req, res) => {
 
         const orders = await Order.find()
             .populate("userId", "name email phone")
-            .populate("restaurantId", "name phone address")
+            .populate("resturantId", "name phone address")
             .sort({ createdAt: -1 });
 
         res.status(200).json({
@@ -158,8 +158,8 @@ const updateOrderStatus = async (req, res) => {
         const { status } = req.body;
         const userRole = req.user.role;
 
-        // Only admin and restaurant owners can update order status
-        if (userRole !== "admin" && userRole !== "restaurant_owner") {
+        // Only admin and resturant owners can update order status
+        if (userRole !== "admin" && userRole !== "resturant_owner") {
             return res.status(403).json({
                 success: false,
                 message: "Not authorized to update order status"
@@ -208,7 +208,7 @@ const updatePaymentStatus = async (req, res) => {
         const { paymentStatus } = req.body;
         const userRole = req.user.role;
 
-        if (userRole !== "admin" && userRole !== "restaurant_owner") {
+        if (userRole !== "admin" && userRole !== "resturant_owner") {
             return res.status(403).json({
                 success: false,
                 message: "Not authorized to update payment status"
