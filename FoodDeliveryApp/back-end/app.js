@@ -3,6 +3,9 @@ const mongoose = require('mongoose');
 const userRoute = require('./routes/user.route');
 const menuItemsRoute = require('./routes/menuItems.route');
 const resturantRoute = require('./routes/resturant.route');
+const cartRoute = require('./routes/cart.route');
+const orderRoute = require('./routes/order.route');
+require('dotenv').config()
 
 const app = express();
 app.use(express.json());
@@ -15,6 +18,8 @@ app.get('/', (req, res) => {
 app.use('/user', userRoute);
 app.use('/menuItems', menuItemsRoute);
 app.use('/resturant', resturantRoute);
+app.use('/cart', cartRoute);
+app.use('/order', orderRoute);
 
   mongoose
   .connect(

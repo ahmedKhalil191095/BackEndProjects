@@ -19,7 +19,12 @@ const login = async (req, res) => {
         if (!(await bcrypt.compare(mySecret + req.body.password, user.password))) {
             return res.status(401).json({ message: 'Invalid password' });
         }
-        const accessToken = await jwt.sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET);
+        const accessToken = await jwt.sign({
+            id: user._id,
+            userId: user.userId,
+            email: user.email,
+            role: user.role
+        }, process.env.ACCESS_TOKEN_SECRET);
         res.json({ accessToken : accessToken });
     } catch (error) {
         res.status(500).json({ message: error.message });

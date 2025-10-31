@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    role:{ // "customer", "restaurant_owner", or "admin"
+    role:{ // "customer", "admin"
         type: String,
         required: true,
         default: 'customer'

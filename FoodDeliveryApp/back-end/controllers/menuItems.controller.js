@@ -2,11 +2,11 @@ const menuItems = require('../models/menuItems.model');
 
 const getAllmenuItems = async (req, res) => {
     try {
-        const menuItems = await menuItems.find();
-        if (!menuItems) {
+        const items = await menuItems.find();
+        if (!items) {
             return res.status(404).json({ message: 'No food items found' });
         }
-        res.json(menuItems);
+        res.json(items);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
