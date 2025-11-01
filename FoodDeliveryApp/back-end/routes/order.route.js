@@ -1,6 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const { authentecateToken } = require("../middleware/authentication");
+const { validate, validateParams } = require("../middleware/validator");
+const {
+    placeOrderSchema,
+    updateOrderStatusSchema,
+    updatePaymentStatusSchema,
+    orderIdSchema
+} = require("../validators/order.validator");
 const {
     placeOrder,
     getOrderById,
@@ -11,13 +18,13 @@ const {
     cancelOrder
 } = require("../controllers/order.controller");
 
-// All order routes require authentication
-router.post("/place", authentecateToken, placeOrder);
+// All order routes require authentication and validation
+router.post("/place", authentecateToken, validate(placeOrderSchema), placeOrder);
 router.get("/user", authentecateToken, getUserOrders);
 router.get("/all", authentecateToken, getAllOrders);
-router.get("/:orderId", authentecateToken, getOrderById);
-router.put("/:orderId/status", authentecateToken, updateOrderStatus);
-router.put("/:orderId/payment", authentecateToken, updatePaymentStatus);
-router.put("/:orderId/cancel", authentecateToken, cancelOrder);
+router.get("/:orderId", authentecateToken, validateParams(orderIdSchema), getOrderById);
+router.put("/:orderId/status", authentecateToken, validateParams(orderIdSchema), validate(updateOrderStatusSchema), updateOrderStatus);
+router.put("/:orderId/payment", authentecateToken, validateParams(orderIdSchema), validate(updatePaymentStatusSchema), updatePaymentStatus);
+router.put("/:orderId/cancel", authentecateToken, validateParams(orderIdSchema), cancelOrder);
 
 module.exports = router;
