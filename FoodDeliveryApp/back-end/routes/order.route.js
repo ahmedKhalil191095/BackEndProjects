@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { authentecateToken } = require("../middleware/authentication");
 const { validate, validateParams } = require("../middleware/validator");
+const { orderLimiter } = require("../middleware/rateLimiter");
 const {
     placeOrderSchema,
     updateOrderStatusSchema,
@@ -18,8 +19,8 @@ const {
     cancelOrder
 } = require("../controllers/order.controller");
 
-// All order routes require authentication and validation
-router.post("/place", authentecateToken, validate(placeOrderSchema), placeOrder);
+// All order routes require authentication, validation, and rate limiting
+router.post("/place", orderLimiter, authentecateToken, validate(placeOrderSchema), placeOrder);
 router.get("/user", authentecateToken, getUserOrders);
 router.get("/all", authentecateToken, getAllOrders);
 router.get("/:orderId", authentecateToken, validateParams(orderIdSchema), getOrderById);

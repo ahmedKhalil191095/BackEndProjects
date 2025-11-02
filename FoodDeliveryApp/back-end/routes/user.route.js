@@ -5,10 +5,13 @@ const loginService = require("../sevices/login.service");
 const authentecateToken = require("../middleware/authentication");
 const { validate, validateParams } = require("../middleware/validator");
 const { userSignupSchema, userLoginSchema, userUpdateSchema, objectIdSchema } = require("../validators/user.validator");
+const { loginLimiter, signupLimiter, authLimiter } = require("../middleware/rateLimiter");
 
-// Public routes with validation
-router.post("/signup", validate(userSignupSchema), userController.createUser);
-router.post("/login", validate(userLoginSchema), loginService.login);
+// Public routes with validation and rate limiting
+router.post("/signup", signupLimiter, validate(userSignupSchema), userController.createUser);
+router.post("/login", loginLimiter, validate(userLoginSchema), loginService.login);
+router.post("/refresh", authLimiter, loginService.refreshAccessToken);
+router.post("/logout", authLimiter, loginService.logout);
 
 // Protected routes with validation
 router.get("/", authentecateToken.authentecateToken, userController.getAllUsers);
