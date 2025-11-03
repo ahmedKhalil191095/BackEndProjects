@@ -24,8 +24,13 @@ const menuItemsSchema = new mongoose.Schema({
     isAvailable: {
         type: Boolean,
         default: true
-    }
+    },
+    restaurantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Restaurant',
+    required: true
+}
 });
 
-const menuItems = mongoose.model('menuItems', menuItemsSchema);
-module.exports = menuItems;
+const MenuItem = mongoose.model('MenuItem', menuItemsSchema);
+module.exports = MenuItem;

@@ -4,7 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const userRoute = require('./routes/user.route');
 const menuItemsRoute = require('./routes/menuItems.route');
-const resturantRoute = require('./routes/resturant.route');
+const restaurantRoute = require('./routes/restaurant.route');
 const cartRoute = require('./routes/cart.route');
 const orderRoute = require('./routes/order.route');
 const { generalLimiter } = require('./middleware/rateLimiter');
@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
 
 app.use('/user', userRoute);
 app.use('/menuItems', menuItemsRoute);
-app.use('/resturant', resturantRoute);
+app.use('/restaurant', restaurantRoute);
 app.use('/cart', cartRoute);
 app.use('/order', orderRoute);
 

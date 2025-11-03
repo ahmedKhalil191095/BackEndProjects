@@ -41,7 +41,7 @@ const addToCart = async (req, res) => {
         }
 
         // Verify menu item exists
-        const menuItem = await MenuItem.findById(menuItemId);
+        const menuItem = await MenuItem.findById(menuItemId).populate('restaurantId');
         if (!menuItem) {
             return res.status(404).json({
                 success: false,
@@ -57,15 +57,29 @@ const addToCart = async (req, res) => {
         }
 
         // Find or create cart
-        let cart = await Cart.findOne({ userId });
+        let cart = await Cart.findOne({ userId }).populate('items.menuItemId');
 
         if (!cart) {
             cart = new Cart({ userId, items: [], totalPrice: 0 });
         }
 
+        // Validate all items are from the same restaurant
+        if (cart.items.length > 0) {
+            const existingMenuItem = await MenuItem.findById(cart.items[0].menuItemId._id || cart.items[0].menuItemId);
+
+            if (existingMenuItem && existingMenuItem.restaurantId.toString() !== menuItem.restaurantId._id.toString()) {
+                return res.status(400).json({
+                    success: false,
+                    message: `You can only order from one restaurant at a time. Current cart contains items from ${cart.items[0].menuItemId.restaurantId?.name || 'another restaurant'}. Please clear your cart first.`,
+                    currentRestaurant: existingMenuItem.restaurantId,
+                    attemptedRestaurant: menuItem.restaurantId._id
+                });
+            }
+        }
+
         // Check if item already exists in cart
         const existingItemIndex = cart.items.findIndex(
-            item => item.menuItemId.toString() === menuItemId
+            item => item.menuItemId.toString() === menuItemId || item.menuItemId._id?.toString() === menuItemId
         );
 
         if (existingItemIndex > -1) {

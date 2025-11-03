@@ -51,10 +51,28 @@ const createMenuItemSchema = Joi.object({
             'any.required': 'Category is required'
         }),
 
+    restaurantId: Joi.string()
+        .pattern(/^[0-9a-fA-F]{24}$/)
+        .required()
+        .messages({
+            'string.pattern.base': 'Invalid restaurant ID format',
+            'any.required': 'Restaurant ID is required'
+        }),
+
     isAvailable: Joi.boolean()
         .default(true)
         .messages({
             'boolean.base': 'isAvailable must be true or false'
+        })
+});
+
+// Validation schema for getting menu items with query parameters
+const getMenuItemsSchema = Joi.object({
+    restaurantId: Joi.string()
+        .pattern(/^[0-9a-fA-F]{24}$/)
+        .optional()
+        .messages({
+            'string.pattern.base': 'Invalid restaurant ID format'
         })
 });
 
@@ -103,6 +121,13 @@ const updateMenuItemSchema = Joi.object({
             'string.max': 'Category cannot exceed 50 characters'
         }),
 
+    restaurantId: Joi.string()
+        .pattern(/^[0-9a-fA-F]{24}$/)
+        .optional()
+        .messages({
+            'string.pattern.base': 'Invalid restaurant ID format'
+        }),
+
     isAvailable: Joi.boolean()
         .optional()
         .messages({
@@ -114,5 +139,6 @@ const updateMenuItemSchema = Joi.object({
 
 module.exports = {
     createMenuItemSchema,
-    updateMenuItemSchema
+    updateMenuItemSchema,
+    getMenuItemsSchema
 };

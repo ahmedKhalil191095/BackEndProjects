@@ -27,7 +27,7 @@ const login = async (req, res) => {
             email: user.email,
             role: user.role
         }, process.env.ACCESS_TOKEN_SECRET, {
-            expiresIn: '15m'  // Token expires in 15 minutes
+            expiresIn: '60m'  // Token expires in 15 minutes
         });
 
         // Create Refresh Token (expires in 7 days)
@@ -99,7 +99,7 @@ const refreshAccessToken = async (req, res) => {
                 email: user.email,
                 role: user.role
             }, process.env.ACCESS_TOKEN_SECRET, {
-                expiresIn: '15m'
+                expiresIn: '60m'
             });
 
             // Create new Refresh Token (expires in 7 days)

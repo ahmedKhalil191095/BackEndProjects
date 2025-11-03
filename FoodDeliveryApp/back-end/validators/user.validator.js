@@ -39,12 +39,34 @@ const userSignupSchema = Joi.object({
             'any.required': 'Phone number is required'
         }),
 
-    addresses: Joi.string()
-        .min(5)
-        .max(200)
+    addresses: Joi.array()
+        .items(
+            Joi.object({
+                street: Joi.string().required().messages({
+                    'any.required': 'Street is required'
+                }),
+                city: Joi.string().required().messages({
+                    'any.required': 'City is required'
+                }),
+                state: Joi.string().required().messages({
+                    'any.required': 'State is required'
+                }),
+                zipCode: Joi.string().required().messages({
+                    'any.required': 'Zip code is required'
+                }),
+                country: Joi.string().optional(),
+                label: Joi.string().valid('Home', 'Work', 'Other').optional(),
+                isDefault: Joi.boolean().optional(),
+                coordinates: Joi.object({
+                    latitude: Joi.number().min(-90).max(90).optional(),
+                    longitude: Joi.number().min(-180).max(180).optional()
+                }).optional()
+            })
+        )
+        .min(1)
         .required()
         .messages({
-            'string.min': 'Address must be at least 5 characters long',
+            'array.min': 'At least one address is required',
             'any.required': 'Address is required'
         }),
 
@@ -104,12 +126,26 @@ const userUpdateSchema = Joi.object({
             'string.pattern.base': 'Please provide a valid phone number'
         }),
 
-    addresses: Joi.string()
-        .min(5)
-        .max(200)
+    addresses: Joi.array()
+        .items(
+            Joi.object({
+                street: Joi.string().required(),
+                city: Joi.string().required(),
+                state: Joi.string().required(),
+                zipCode: Joi.string().required(),
+                country: Joi.string().optional(),
+                label: Joi.string().valid('Home', 'Work', 'Other').optional(),
+                isDefault: Joi.boolean().optional(),
+                coordinates: Joi.object({
+                    latitude: Joi.number().min(-90).max(90).optional(),
+                    longitude: Joi.number().min(-180).max(180).optional()
+                }).optional()
+            })
+        )
+        .min(1)
         .optional()
         .messages({
-            'string.min': 'Address must be at least 5 characters long'
+            'array.min': 'At least one address is required if updating addresses'
         }),
 
     // Don't allow users to update their own role

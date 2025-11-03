@@ -28,10 +28,42 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    addresses: {
-        type : String,
-        required: true
-    }
+    addresses: [{
+        street: {
+            type: String,
+            required: true
+        },
+        city: {
+            type: String,
+            required: true
+        },
+        state: {
+            type: String,
+            required: true
+        },
+        zipCode: {
+            type: String,
+            required: true
+        },
+        country: {
+            type: String,
+            default: 'USA'
+        },
+        label: {
+            type: String,
+            enum: ['Home', 'Work', 'Other'],
+            default: 'Home'
+        },
+        isDefault: {
+            type: Boolean,
+            default: false
+        },
+        // For delivery routing and distance calculation
+        coordinates: {
+            latitude: Number,
+            longitude: Number
+        }
+    }]
   },
   {
     timestamps: true

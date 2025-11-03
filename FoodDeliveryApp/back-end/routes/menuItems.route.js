@@ -2,12 +2,12 @@ const express = require("express");
 const router = express.Router();
 const menuItemsController = require("../controllers/menuItems.controller");
 const { authentecateToken, authorizeRoles } = require("../middleware/authentication");
-const { validate, validateParams } = require("../middleware/validator");
-const { createMenuItemSchema, updateMenuItemSchema } = require("../validators/menuItem.validator");
+const { validate, validateParams, validateQuery } = require("../middleware/validator");
+const { createMenuItemSchema, updateMenuItemSchema, getMenuItemsSchema } = require("../validators/menuItem.validator");
 const { objectIdSchema } = require("../validators/user.validator");
 
 // Customer access: View menu items
-router.get("/", authentecateToken, authorizeRoles("customer", "admin"), menuItemsController.getAllmenuItems);
+router.get("/", authentecateToken, authorizeRoles("customer", "admin"), validateQuery(getMenuItemsSchema), menuItemsController.getAllmenuItemsForSpeecificRestaurant);
 router.get("/:id", authentecateToken, authorizeRoles("customer", "admin"), validateParams(objectIdSchema), menuItemsController.getItemById);
 
 // Admin only: Create, update and delete menu items with validation

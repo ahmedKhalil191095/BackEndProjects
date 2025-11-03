@@ -14,7 +14,7 @@ const {
 
 // All cart routes require authentication, validation, and rate limiting
 router.get("/", authentecateToken, getCart);
-router.post("/add", orderLimiter, authentecateToken, validate(addToCartSchema), addToCart);
+router.post("/addToCart", orderLimiter, authentecateToken, validate(addToCartSchema), addToCart);
 router.put("/update/:itemId", orderLimiter, authentecateToken, validateParams(cartItemIdSchema), validate(updateCartItemSchema), updateCartItem);
 router.delete("/remove/:itemId", orderLimiter, authentecateToken, validateParams(cartItemIdSchema), removeFromCart);
 router.delete("/clear", orderLimiter, authentecateToken, clearCart);

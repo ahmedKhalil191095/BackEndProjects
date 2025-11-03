@@ -1,9 +1,18 @@
-const menuItems = require('../models/menuItems.model');
+const MenuItem = require('../models/menuItems.model');
 
-const getAllmenuItems = async (req, res) => {
+const getAllmenuItemsForSpeecificRestaurant = async (req, res) => {
     try {
-        const items = await menuItems.find();
-        if (!items) {
+        // Build query filter - if restaurantId is provided, filter by it
+        const filter = {};
+        if (req.query.restaurantId) {
+            filter.restaurantId = req.query.restaurantId;
+        } else {
+            return res.status(400).json({ message: 'restaurantId query parameter is required' });
+        } 
+        const items = await MenuItem.find(filter)
+            .populate('restaurantId', 'name address phone rating');
+
+        if (!items || items.length === 0) {
             return res.status(404).json({ message: 'No food items found' });
         }
         res.json(items);
@@ -14,7 +23,8 @@ const getAllmenuItems = async (req, res) => {
 
 const getItemById = async (req, res) => {
     try {
-        const Item = await menuItems.findById(req.params.id);
+        const Item = await MenuItem.findById(req.params.id)
+            .populate('restaurantId', 'name address phone rating operatingHours isOpen');
         if (!Item) {
             return res.status(404).json({ message: 'No food items found' });
         }
@@ -26,7 +36,7 @@ const getItemById = async (req, res) => {
 
 const addFoodItem = async (req, res) => {
     try {
-        const Item = await menuItems.create(req.body);
+        const Item = await MenuItem.create(req.body);
         if (!Item) {
             return res.status(404).json({ message: 'No food items found' });
         }
@@ -38,7 +48,7 @@ const addFoodItem = async (req, res) => {
 
 const updateFoodItem = async (req, res) => {
     try {
-        const Item = await menuItems.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const Item = await MenuItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!Item) {
             return res.status(404).json({ message: 'No food items found' });
         }
@@ -50,7 +60,7 @@ const updateFoodItem = async (req, res) => {
 
 const deleteFoodItem = async (req, res) => {
     try {
-        const Item = await menuItems.findByIdAndDelete(req.params.id);
+        const Item = await MenuItem.findByIdAndDelete(req.params.id);
         if (!Item) {
             return res.status(404).json({ message: 'No food items found' });
         }
@@ -62,7 +72,7 @@ const deleteFoodItem = async (req, res) => {
 
 
 module.exports = {
-    getAllmenuItems,
+    getAllmenuItemsForSpeecificRestaurant,
     getItemById,
     addFoodItem,
     updateFoodItem,

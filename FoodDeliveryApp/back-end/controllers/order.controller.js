@@ -1,17 +1,18 @@
 const Order = require("../models/order.model");
 const Cart = require("../models/cart.model");
 const User = require("../models/user.model");
+const Restaurant = require("../models/restaurant.model");
 
 // Place order from cart
 const placeOrder = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { resturantId, deliveryAddress, paymentMethod } = req.body;
+        const { restaurantId, deliveryAddress, paymentMethod } = req.body;
 
-        if (!resturantId || !deliveryAddress) {
+        if (!restaurantId || !deliveryAddress) {
             return res.status(400).json({
                 success: false,
-                message: "resturantId and deliveryAddress are required"
+                message: "restaurantId and deliveryAddress are required"
             });
         }
 
@@ -25,12 +26,68 @@ const placeOrder = async (req, res) => {
             });
         }
 
+        // Validate all cart items belong to the specified restaurant
+        const MenuItem = require("../models/menuItems.model");
+        for (const cartItem of cart.items) {
+            const menuItem = await MenuItem.findById(cartItem.menuItemId);
+            if (!menuItem) {
+                return res.status(404).json({
+                    success: false,
+                    message: `Menu item ${cartItem.name} not found`
+                });
+            }
+            if (menuItem.restaurantId.toString() !== restaurantId) {
+                return res.status(400).json({
+                    success: false,
+                    message: `All items in cart must be from the same restaurant. Item "${cartItem.name}" is from a different restaurant.`
+                });
+            }
+        }
+
+        // Get restaurant details for delivery fee
+        const restaurant = await Restaurant.findById(restaurantId);
+
+        if (!restaurant) {
+            return res.status(404).json({
+                success: false,
+                message: "Restaurant not found"
+            });
+        }
+
+        // Check if restaurant is open
+        if (!restaurant.isOpen) {
+            return res.status(400).json({
+                success: false,
+                message: "Restaurant is currently closed"
+            });
+        }
+
+        // Calculate pricing breakdown
+        const subtotal = cart.totalPrice;
+        const TAX_RATE = 0.08; // 8% tax
+        const tax = parseFloat((subtotal * TAX_RATE).toFixed(2));
+        const deliveryFee = restaurant.deliveryFee || 5.00;
+        const total = parseFloat((subtotal + tax + deliveryFee).toFixed(2));
+
+        // Check if order meets minimum order requirement
+        if (subtotal < restaurant.minimumOrder) {
+            return res.status(400).json({
+                success: false,
+                message: `Minimum order amount is $${restaurant.minimumOrder}`
+            });
+        }
+
         // Create order from cart
         const order = new Order({
             userId,
-            resturantId,
+            restaurantId,
             items: cart.items,
-            totalPrice: cart.totalPrice,
+            pricing: {
+                subtotal,
+                tax,
+                deliveryFee,
+                total
+            },
             deliveryAddress,
             paymentMethod: paymentMethod || "cash",
             status: "pending"
@@ -66,7 +123,7 @@ const getOrderById = async (req, res) => {
 
         const order = await Order.findOne({ orderId })
             .populate("userId", "name email phone")
-            .populate("resturantId", "name phone address")
+            .populate("restaurantId", "name phone address")
             .populate("items.menuItemId", "name category");
 
         if (!order) {
@@ -103,7 +160,7 @@ const getUserOrders = async (req, res) => {
         const userId = req.user.id;
 
         const orders = await Order.find({ userId })
-            .populate("resturantId", "name phone address")
+            .populate("restaurantId", "name phone address")
             .sort({ createdAt: -1 });
 
         res.status(200).json({
@@ -134,7 +191,7 @@ const getAllOrders = async (req, res) => {
 
         const orders = await Order.find()
             .populate("userId", "name email phone")
-            .populate("resturantId", "name phone address")
+            .populate("restaurantId", "name phone address")
             .sort({ createdAt: -1 });
 
         res.status(200).json({
@@ -158,8 +215,8 @@ const updateOrderStatus = async (req, res) => {
         const { status } = req.body;
         const userRole = req.user.role;
 
-        // Only admin and resturant owners can update order status
-        if (userRole !== "admin" && userRole !== "resturant_owner") {
+        // Only admin and restaurant owners can update order status
+        if (userRole !== "admin" && userRole !== "restaurant_owner") {
             return res.status(403).json({
                 success: false,
                 message: "Not authorized to update order status"
@@ -208,7 +265,7 @@ const updatePaymentStatus = async (req, res) => {
         const { paymentStatus } = req.body;
         const userRole = req.user.role;
 
-        if (userRole !== "admin" && userRole !== "resturant_owner") {
+        if (userRole !== "admin" && userRole !== "restaurant_owner") {
             return res.status(403).json({
                 success: false,
                 message: "Not authorized to update payment status"

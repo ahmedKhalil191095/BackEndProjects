@@ -10,15 +10,37 @@ const placeOrderSchema = Joi.object({
             'any.required': 'Restaurant ID is required'
         }),
 
-    deliveryAddress: Joi.string()
-        .min(10)
-        .max(300)
-        .required()
-        .messages({
-            'string.min': 'Delivery address must be at least 10 characters long',
-            'string.max': 'Delivery address cannot exceed 300 characters',
-            'any.required': 'Delivery address is required'
-        }),
+    deliveryAddress: Joi.object({
+        street: Joi.string()
+            .required()
+            .messages({
+                'any.required': 'Street address is required'
+            }),
+        city: Joi.string()
+            .required()
+            .messages({
+                'any.required': 'City is required'
+            }),
+        state: Joi.string()
+            .required()
+            .messages({
+                'any.required': 'State is required'
+            }),
+        zipCode: Joi.string()
+            .required()
+            .messages({
+                'any.required': 'Zip code is required'
+            }),
+        country: Joi.string()
+            .default('USA'),
+        coordinates: Joi.object({
+            latitude: Joi.number(),
+            longitude: Joi.number()
+        })
+    }).required()
+    .messages({
+        'any.required': 'Delivery address is required'
+    }),
 
     paymentMethod: Joi.string()
         .valid('cash', 'card', 'online')

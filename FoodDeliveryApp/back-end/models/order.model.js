@@ -31,25 +31,75 @@ const orderSchema = new mongoose.Schema({
         ref: "User",
         required: true
     },
-    resturantId: {
+    restaurantId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "resturant",
+        ref: "Restaurant",
         required: true
     },
     items: [orderItemSchema],
-    totalPrice: {
-        type: Number,
-        required: true
+    pricing: {
+        subtotal: {
+            type: Number,
+            required: true
+        },
+        tax: {
+            type: Number,
+            required: true,
+            default: 0
+        },
+        deliveryFee: {
+            type: Number,
+            required: true,
+            default: 0
+        },
+        total: {
+            type: Number,
+            required: true
+        }
     },
     deliveryAddress: {
-        type: String,
-        required: true
+        street: {
+            type: String,
+            required: true
+        },
+        city: {
+            type: String,
+            required: true
+        },
+        state: {
+            type: String,
+            required: true
+        },
+        zipCode: {
+            type: String,
+            required: true
+        },
+        country: {
+            type: String,
+            default: 'USA'
+        },
+        coordinates: {
+            latitude: Number,
+            longitude: Number
+        }
     },
     status: {
         type: String,
         enum: ["pending", "confirmed", "preparing", "out_for_delivery", "delivered", "cancelled"],
         default: "pending"
     },
+    statusHistory: [{
+        status: {
+            type: String,
+            enum: ["pending", "confirmed", "preparing", "out_for_delivery", "delivered", "cancelled"],
+            required: true
+        },
+        timestamp: {
+            type: Date,
+            default: Date.now
+        },
+        note: String
+    }],
     paymentMethod: {
         type: String,
         enum: ["cash", "card", "online"],
@@ -70,13 +120,24 @@ orderSchema.pre("save", async function(next) {
         try {
             const lastOrder = await this.constructor.findOne().sort({ orderId: -1 });
             this.orderId = lastOrder ? lastOrder.orderId + 1 : 1;
-            next();
+
+            // Add initial status to history
+            this.statusHistory.push({
+                status: this.status,
+                timestamp: new Date(),
+                note: "Order created"
+            });
         } catch (error) {
-            next(error);
+            return next(error);
         }
-    } else {
-        next();
+    } else if (this.isModified('status')) {
+        // Track status changes
+        this.statusHistory.push({
+            status: this.status,
+            timestamp: new Date()
+        });
     }
+    next();
 });
 
 const Order = mongoose.model("Order", orderSchema);
