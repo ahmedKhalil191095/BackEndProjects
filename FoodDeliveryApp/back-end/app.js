@@ -1,7 +1,7 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
+const connectDB = require('./config/database');
 const userRoute = require('./routes/user.route');
 const menuItemsRoute = require('./routes/menuItems.route');
 const restaurantRoute = require('./routes/restaurant.route');
@@ -43,16 +43,9 @@ app.use('/restaurant', restaurantRoute);
 app.use('/cart', cartRoute);
 app.use('/order', orderRoute);
 
-  mongoose
-  .connect(
-    process.env.MONGODB_URI
-  )
-  .then(() => {
-    console.log("Connected to database!");
+// Connect to database and start server
+connectDB().then(() => {
     app.listen(port, () => {
-      console.log(`Server is running on port ${port}`);
+        console.log(`Server is running on port ${port}`);
     });
-  })
-  .catch(() => {
-    console.log("Connection failed!");
-  });
+});
